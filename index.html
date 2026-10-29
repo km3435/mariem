@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>عيد ميلاد سعيد يا مريم! 🎉</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      background: #090a0f;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* خلفية النجوم المتحركة */
+    #stars-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .star {
+      position: absolute;
+      background-color: white;
+      border-radius: 50%;
+      animation: twinkle infinite ease-in-out;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+
+    /* canvas الألعاب النارية */
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* إطار تطبيق الموبايل */
+    .phone-frame {
+      position: relative;
+      z-index: 10;
+      width: 380px;
+      height: 720px;
+      max-width: 92vw;
+      max-height: 90vh;
+      background: #12131c;
+      border: 4px solid #2a2c3d;
+      border-radius: 40px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 65, 108, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* شريط الحالة الأعلى للموبايل */
+    .status-bar {
+      height: 35px;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #a0a0b0;
+      z-index: 20;
+    }
+
+    .app-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    /* زر البدء داخل التطبيق */
+    #start-btn {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      color: white;
+      border: none;
+      padding: 16px 30px;
+      font-size: 1.2rem;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(255, 75, 43, 0.4);
+      transition: all 0.3s ease;
+      font-weight: bold;
+      width: 85%;
+    }
+
+    #start-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* شاشة العد التنازلي */
+    #countdown-box {
+      display: none;
+    }
+
+    #countdown-number {
+      font-size: 6rem;
+      font-weight: 900;
+      color: #ff4b2b;
+      text-shadow: 0 0 25px #ff4b2b;
+      animation: pulse 0.9s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(0.88); opacity: 0.8; }
+      to { transform: scale(1.08); opacity: 1; }
+    }
+
+    /* كارت الرسالة */
+    #message-card {
+      display: none;
+      width: 100%;
+      height: 100%;
+      text-align: right;
+    }
+
+    .title {
+      font-size: 1.4rem;
+      color: #ff758c;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    #typed-text {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: #e0e0e0;
+      white-space: pre-line;
+      word-break: break-word;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 3px;
+      height: 1.1em;
+      background-color: #ff758c;
+      animation: blink 0.7s infinite;
+      vertical-align: middle;
+      margin-right: 3px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* تنسيق الصورة أسفل الرسالة */
+    #birthday-img {
+      display: none;
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: 15px;
+      margin-top: 20px;
+      border: 2px solid rgba(255, 117, 140, 0.4);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 1s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- خلفية النجوم -->
+  <div id="stars-container"></div>
+
+  <!-- خلفية الألعاب النارية -->
+  <canvas id="canvas"></canvas>
+
+  <!-- مشغل الأغنية -->
+  <audio id="bg-music" preload="auto">
+    <source src="file:///D:/مريم/Albumaty.Com_Tamer_Hosni_Koll_Sana.mp3" type="audio/mpeg">
+    <source src="Albumaty.Com_Tamer_Hosni_Koll_Sana.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- إطار تطبيق الموبايل -->
+  <div class="phone-frame">
+    <div class="status-bar">
+      <span>12:00</span>
+      <span>📱 5G 🔋 100%</span>
+    </div>
+
+    <div class="app-content">
+      <!-- زر البدء -->
+      <button id="start-btn" onclick="startCelebration()">افتح المفاجأة 🎁</button>
+
+      <!-- شاشة العد التنازلي -->
+      <div id="countdown-box">
+        <div id="countdown-number">10</div>
+      </div>
+
+      <!-- كارت الرسالة -->
+      <div id="message-card">
+        <h1 class="title">كل سنة وأنتي طيبة يا مريم! 🎉❤️</h1>
+        <p id="typed-text"></p><span class="cursor" id="cursor"></span>
+        
+        <!-- الصورة أسفل الرسالة -->
+        <img id="birthday-img" src="file:///D:/مريم/WhatsApp Image 2026-10-30 at 12.26.46 AM.jpeg" alt="مريم">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // أصوات العد التنازلي
+    let audioCtx;
+    function playBeepSound(isFinal = false) {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = isFinal ? 'triangle' : 'sine';
+      osc.frequency.setValueAtTime(isFinal ? 880 : 440, audioCtx.currentTime);
+
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (isFinal ? 0.6 : 0.25));
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + (isFinal ? 0.6 : 0.25));
+    }
+
+    // توليد النجوم
+    const starsContainer = document.getElementById('stars-container');
+    for (let i = 0; i < 90; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      const size = Math.random() * 2.5 + 1;
+      star.style.width = `${size}px`;
+      star.style.height = `${size}px`;
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDuration = `${Math.random() * 3 + 2}s`;
+      star.style.animationDelay = `${Math.random() * 2}s`;
+      starsContainer.appendChild(star);
+    }
+
+    // نص الرسالة
+    const fullMessage = `كل سنة وأنتي طيبة وبخير يا أطيب وأجمل مريم في الدنيا! 🎈✨
+
+النهاردة مش مجرد يوم عادي، النهاردة عيد ميلاد أعز وأغلى صديقة ليا. 
+كل سنة وأنتي الضحكة اللي بتنور حياتنا، والسند والجدعنة اللي ملهاش مثيل.
+
+بتمنى لك في سنتك الجديدة دي كل النجاح والتوفيق، وكل حاجة حلوة في الدنيا تشبه قلبك الأبيض الصافي. 
+ربنا يحقق لك كل أحلامك وطموحاتك، ويديم وجودك في حياتي نعمة.
+
+عقبال 100 سنة في سعادة وصحة وراحة بال يا أرق مريم! 🥳💖🎂`;
+
+    let count = 10;
+    const startBtn = document.getElementById('start-btn');
+    const countdownBox = document.getElementById('countdown-box');
+    const countdownNumber = document.getElementById('countdown-number');
+    const messageCard = document.getElementById('message-card');
+    const birthdayImg = document.getElementById('birthday-img');
+    const audio = document.getElementById('bg-music');
+
+    function startCelebration() {
+      startBtn.style.display = 'none';
+      countdownBox.style.display = 'block';
+      playBeepSound(false);
+
+      const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownNumber.textContent = count;
+          playBeepSound(count === 1);
+        } else {
+          clearInterval(timer);
+          countdownBox.style.display = 'none';
+          showBirthdayMessage();
+        }
+      }, 1000);
+    }
+
+    function showBirthdayMessage() {
+      messageCard.style.display = 'block';
+      audio.play().catch(e => console.log(e));
+      startFireworks();
+
+      let index = 0;
+      const typedText = document.getElementById('typed-text');
+      
+      function typeWriter() {
+        if (index < fullMessage.length) {
+          typedText.textContent += fullMessage.charAt(index);
+          index++;
+          setTimeout(typeWriter, 40);
+        } else {
+          document.getElementById('cursor').style.display = 'none';
+          // إظهار الصورة بعد انتهاء كتابة النص
+          birthdayImg.style.display = 'block';
+        }
+      }
+      typeWriter();
+    }
+
+    // الألعاب النارية
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = Math.random() * 2.5 + 1;
+        this.velocity = {
+          x: (Math.random() - 0.5) * 7,
+          y: (Math.random() - 0.5) * 7
+        };
+        this.alpha = 1;
+        this.friction = 0.95;
+        this.gravity = 0.07;
+      }
+
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      update() {
+        this.velocity.x *= this.friction;
+        this.velocity.y *= this.friction;
+        this.velocity.y += this.gravity;
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.alpha -= 0.018;
+      }
+    }
+
+    let particles = [];
+    const colors = ['#ff4b2b', '#ff416c', '#ff758c', '#ffbe0b', '#fb5607', '#ff006e', '#8338ec'];
+
+    function createFirework() {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * (canvas.height * 0.5);
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      for (let i = 0; i < 30; i++) {
+        particles.push(new Particle(x, y, color));
+      }
+    }
+
+    function animateFireworks() {
+      requestAnimationFrame(animateFireworks);
+      ctx.fillStyle = 'rgba(9, 10, 15, 0.22)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((particle, index) => {
+        if (particle.alpha > 0) {
+          particle.update();
+          particle.draw();
+        } else {
+          particles.splice(index, 1);
+        }
+      });
+    }
+
+    function startFireworks() {
+      animateFireworks();
+      setInterval(createFirework, 700);
+    }
+  </script>
+</body>
+</html>
